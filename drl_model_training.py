@@ -104,7 +104,7 @@ def test_model(model, sessions=10):
 if __name__ == "__main__":
     # setup PPO model
     model = PPO(
-        "MlpPolicy",
+        "MultiInputPolicy",
         env,
         verbose=1,
         tensorboard_log="./ppo_divide21drl_tensorboard/"
