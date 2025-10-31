@@ -8,6 +8,8 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import EvalCallback
 import torch
 from gymnasium import spaces
+from stable_baselines3.common.monitor import Monitor
+
 
 class MultiDiscreteActionWrapper(gym.Wrapper):
     """
@@ -46,7 +48,7 @@ for dir in dirs:
 
 
 # set the total interaction with the environment
-TOTAL_TIMESTEPS = 1_000_000
+TOTAL_TIMESTEPS = 50_000
 
 
 # ensure environments have the same seed so the results are reproducible
@@ -57,11 +59,13 @@ torch.manual_seed(SEED)
 # create environment
 env = gym.make("Divide21-v0")
 env = MultiDiscreteActionWrapper(env)
+env = Monitor(env)
 env.reset(seed=SEED)
 
 # separate evaluation environment
 eval_env = gym.make("Divide21-v0")
 eval_env = MultiDiscreteActionWrapper(eval_env)
+eval_env = Monitor(eval_env) 
 eval_env.reset(seed=SEED+1)
 
 # setup evaluation callback (saves best model automatically)
@@ -69,7 +73,7 @@ eval_callback = EvalCallback(
     eval_env,
     best_model_save_path=BEST_MODEL_DIR,
     log_path=RESULTS_DIR,
-    eval_freq=100,
+    eval_freq=1000,
     deterministic=True,
     render=False
 )
