@@ -1,7 +1,7 @@
 from datetime import datetime
 import json
 import os
-import gym
+import gymnasium as gym
 import divide21env
 import numpy as np
 from stable_baselines3 import PPO
