@@ -7,6 +7,33 @@ import numpy as np
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import EvalCallback
 import torch
+from gymnasium import spaces
+
+class MultiDiscreteActionWrapper(gym.Wrapper):
+    """
+    Converts a Dict action space of Divide21Env into a MultiDiscrete action space.
+    """
+    def __init__(self, env):
+        super().__init__(env)
+        # convert Dict to MultiDiscrete
+        self.action_space = spaces.MultiDiscrete([
+            env.action_space['digit'].n,
+            env.action_space['division'].n,
+            env.action_space['index'].n
+        ])
+
+    def step(self, action):
+        # convert MultiDiscrete back to Dict for the original environment
+        dict_action = {
+            'digit': int(action[0]),
+            'division': int(action[1]),
+            'index': int(action[2])
+        }
+        return self.env.step(dict_action)
+
+    def reset(self, **kwargs):
+        return self.env.reset(**kwargs)
+
 
 # create folders
 LOGS_DIR = "logs"
@@ -29,10 +56,12 @@ torch.manual_seed(SEED)
 
 # create environment
 env = gym.make("Divide21-v0")
+env = MultiDiscreteActionWrapper(env)
 env.reset(seed=SEED)
 
 # separate evaluation environment
 eval_env = gym.make("Divide21-v0")
+eval_env = MultiDiscreteActionWrapper(eval_env)
 eval_env.reset(seed=SEED+1)
 
 # setup evaluation callback (saves best model automatically)
