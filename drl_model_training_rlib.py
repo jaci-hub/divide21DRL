@@ -5,6 +5,7 @@ from ray.rllib.algorithms.ppo import PPO
 from ray.tune.registry import register_env
 from ray import tune
 from ray.tune.logger import TBXLoggerCallback
+from ray.tune import CheckpointConfig, RunConfig
 from gymnasium.spaces import Box
 import numpy as np
 
@@ -63,13 +64,25 @@ config = {
 
 if __name__ == "__main__":
     # Train using Tune with TensorBoard logging
+    checkpoint_config = CheckpointConfig(
+        checkpoint_frequency=50,
+        checkpoint_at_end=True,
+        num_to_keep=3,
+    )
+
+    run_config = RunConfig(
+        storage_path=storage_dir,
+        callbacks=[TBXLoggerCallback()],
+        checkpoint_config=checkpoint_config,
+    )
+
     tune.run(
         PPO,
         stop={"timesteps_total": 1_000_000},
         config=config,
-        storage_path=storage_dir,
-        callbacks=[TBXLoggerCallback()],
-        checkpoint_at_end=True,
+        run_config=run_config,
+        metric="episode_reward_mean",
+        mode="max"
     )
     
     '''
